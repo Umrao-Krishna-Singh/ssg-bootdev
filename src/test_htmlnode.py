@@ -30,18 +30,6 @@ class TestHTMLNode(unittest.TestCase):
         node3_prop = ' href="https://boot.dev" target="_blank"'
         self.assertEqual(node3.props_to_html(), node3_prop)
 
-    # def test_neq(self):
-    #     node = HTMLNode("This is a type test text node", )
-    #     node2 = HTMLNode("This is a type test text node", )
-    #     self.assertNotEqual(node, node2)
-
-    # def test_url_eq(self):
-    #     node = HTMLNode("This is a text node", )
-    #     node2 = HTMLNode(
-    #         "This is not a text node", , "https://www.boot.dev"
-    #     )
-    #     self.assertNotEqual(node, node2)
-
 
 if __name__ == "__main__":
     unittest.main()

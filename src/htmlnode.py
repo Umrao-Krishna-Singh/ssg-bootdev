@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import List, Dict, Optional
 
 
@@ -15,7 +14,7 @@ class HTMLNode:
         self.children = children
         self.props = props
 
-    def to_html(self):
+    def to_html(self) -> str:
         raise NotImplemented(
             "This method needs to be implemented by inheriting classes"
         )
@@ -37,4 +36,4 @@ class HTMLNode:
             for child in self.children:
                 children += f"{child}"
 
-        return f"\nTAG:{self.tag}\nVALUE:{self.value}\nPROPS:{self.props_to_html()}\nCHILDREN:{children}"
+        return f"\n==========HTML NODE ELEMENT==========\nTAG:{self.tag}\nVALUE:{self.value}\nPROPS:{self.props_to_html()}\nCHILDREN:{children}\n===================="
