@@ -1,23 +1,33 @@
 from typing import List, Dict, Optional
+from htmlnode import HTMLNode
 
 
-class HTMLNode:
+class ParentNode(HTMLNode):
     def __init__(
         self,
-        tag: Optional[str] = None,
-        value: Optional[str] = None,
-        children: Optional[List["HTMLNode"]] = None,
+        tag: str,
+        children: List[HTMLNode],
         props: Optional[Dict] = None,
     ) -> None:
+        super().__init__()
         self.tag = tag
-        self.value = value
         self.children = children
         self.props = props
 
     def to_html(self) -> str:
-        raise NotImplemented(
-            "This method needs to be implemented by inheriting classes"
-        )
+        if not self.tag:
+            raise ValueError("Parent nodes must have tag")
+        if not self.children:
+            raise ValueError("Parent nodes must have children")
+
+        html = f"<{self.tag}{self.props_to_html()}>"
+
+        for child in self.children:
+            html += child.to_html()
+
+        html += f"</{self.tag}>"
+
+        return html
 
     def props_to_html(self) -> str:
         if not self.props:
@@ -31,10 +41,9 @@ class HTMLNode:
 
     def __repr__(self, level: int = 0) -> str:
         children = ""
-
         if self.children:
             for child in self.children:
                 space = "   "
                 children += f"\n{space*(1-level)}child@{level-1}>>" + child.__repr__(-1)
 
-        return f"==========HTML NODE ELEMENT========== TAG:<{self.tag}> |||| VALUE:<{self.value}> |||| PROPS:{self.props_to_html()} |||| CHILDREN:{children}"
+        return f"==========PARENT NODE ELEMENT========== TAG:<{self.tag}> |||| PROPS:<{self.props_to_html()}> |||| CHILDREN:{children}"

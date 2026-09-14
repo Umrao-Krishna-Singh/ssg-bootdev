@@ -22,5 +22,5 @@ class LeafNode(HTMLNode):
         else:
             return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
 
-    def __repr__(self) -> str:
-        return f"\n==========LEAF NODE ELEMENT==========\nTAG:{self.tag}\nVALUE:{self.value}\nPROPS:{self.props_to_html()}\n===================="
+    def __repr__(self, _level=0) -> str:
+        return f"==========LEAF NODE ELEMENT========== TAG:<{self.tag}> |||| VALUE:<{self.value}> |||| PROPS:<{self.props_to_html()}>"
