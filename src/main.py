@@ -2,6 +2,7 @@ source = "static"
 from os import listdir, mkdir
 from os.path import join, abspath, dirname, exists, isfile
 from shutil import copy, rmtree
+import re
 
 # directory where this script lives
 script_dir = dirname(abspath(__file__))
@@ -32,6 +33,18 @@ def cp_data():
 
     if exists(static) and not isfile(static):
         copy_folder(static, public)
+
+
+def extract_title(markdown: str) -> str:
+    title = next(
+        (heading for heading in markdown.split("\n") if re.match(r"^#[^#]", heading)),
+        None,
+    )
+
+    if title is None:
+        raise SyntaxError("Heading not found - no h1 tags found")
+
+    return title.lstrip("#").strip()
 
 
 def main():
