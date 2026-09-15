@@ -1,5 +1,6 @@
 from enum import Enum
 from .leafnode import LeafNode
+from .htmlnode import HTMLNode
 
 
 class TextType(Enum):
@@ -40,7 +41,7 @@ class TextNode:
         return self.url
 
 
-def text_node_to_html_node(text_node: TextNode) -> LeafNode:
+def text_node_to_html_node(text_node: TextNode) -> HTMLNode:
     match text_node.get_type():
         case TextType.TEXT:
             return LeafNode(value=text_node.get_text())

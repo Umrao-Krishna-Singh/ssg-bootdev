@@ -15,12 +15,13 @@ class LeafNode(HTMLNode):
         self.props = props
 
     def to_html(self) -> str:
-        if not self.value:
+        if self.value is None:
             raise ValueError("All leaf nodes must have a value")
         if not self.tag:
             return f"{self.value}"
-        else:
-            return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
+        if self.tag == "img":
+            return f"<{self.tag}{self.props_to_html()}></{self.tag}>"
+        return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
 
     def __repr__(self, _level=0) -> str:
         return f"==========LEAF NODE ELEMENT========== TAG:<{self.tag}> |||| VALUE:<{self.value}> |||| PROPS:<{self.props_to_html()}>"
