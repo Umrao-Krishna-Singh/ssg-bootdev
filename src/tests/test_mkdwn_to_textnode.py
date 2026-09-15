@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from textnode import TextNode, TextType
-from mkdwn_to_textnode import (
+from textnode_parsing.textnode import TextNode, TextType
+from textnode_parsing.mkdwn_to_textnode import (
     split_nodes_delimiter,
     extract_markdown_images,
     split_nodes_images_delimiter,

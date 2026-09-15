@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from mkdwn_to_blocks import markdown_to_blocks
+from blocks_parsing.mkdwn_to_blocks import markdown_to_blocks
 
 
 class TestMarkdownToBlocks(TestCase):

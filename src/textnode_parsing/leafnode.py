@@ -1,5 +1,5 @@
 from typing import Dict, Optional
-from htmlnode import HTMLNode
+from .htmlnode import HTMLNode
 
 
 class LeafNode(HTMLNode):
