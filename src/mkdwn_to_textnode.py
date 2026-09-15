@@ -123,3 +123,14 @@ def split_nodes_images_delimiter(old_nodes: list[TextNode]) -> list[TextNode]:
             new_nodes.append(TextNode(remaining, TextType.TEXT))
 
     return new_nodes
+
+
+def text_to_textnodes(text: str) -> list[TextNode]:
+    bold_nodes = split_nodes_delimiter(
+        [TextNode(text, TextType.TEXT)], "**", TextType.BOLD
+    )
+    italic_nodes = split_nodes_delimiter(bold_nodes, "_", TextType.ITALIC)
+    code_nodes = split_nodes_delimiter(italic_nodes, "`", TextType.CODE)
+    link_nodes = split_nodes_link_delimiter(code_nodes)
+    image_nodes = split_nodes_images_delimiter(link_nodes)
+    return image_nodes

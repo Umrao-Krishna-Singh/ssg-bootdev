@@ -6,6 +6,7 @@ from mkdwn_to_textnode import (
     extract_markdown_images,
     split_nodes_images_delimiter,
     split_nodes_link_delimiter,
+    text_to_textnodes,
 )
 
 
@@ -1022,4 +1023,227 @@ class TestSplitNodesImageAndLink(TestCase):
                 ),
             ],
             nodes,
+        )
+
+
+class TestTextToTextNodes(TestCase):
+    def test_all_text_types(self):
+        text = (
+            "This is **text** with an _italic_ word and a `code block` "
+            "and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) "
+            "and a [link](https://boot.dev)"
+        )
+
+        nodes = text_to_textnodes(text)
+
+        self.assertListEqual(
+            [
+                TextNode("This is ", TextType.TEXT),
+                TextNode("text", TextType.BOLD),
+                TextNode(" with an ", TextType.TEXT),
+                TextNode("italic", TextType.ITALIC),
+                TextNode(" word and a ", TextType.TEXT),
+                TextNode("code block", TextType.CODE),
+                TextNode(" and an ", TextType.TEXT),
+                TextNode(
+                    "obi wan image",
+                    TextType.IMAGE,
+                    "https://i.imgur.com/fJRm4Vk.jpeg",
+                ),
+                TextNode(" and a ", TextType.TEXT),
+                TextNode(
+                    "link",
+                    TextType.LINK,
+                    "https://boot.dev",
+                ),
+            ],
+            nodes,
+        )
+
+    def test_plain_text(self):
+        text = "This is just plain text."
+
+        self.assertListEqual(
+            [
+                TextNode("This is just plain text.", TextType.TEXT),
+            ],
+            text_to_textnodes(text),
+        )
+
+    def test_empty_text(self):
+        self.assertListEqual(
+            [
+                TextNode("", TextType.TEXT),
+            ],
+            text_to_textnodes(""),
+        )
+
+    def test_bold(self):
+        text = "This is **bold** text."
+
+        self.assertListEqual(
+            [
+                TextNode("This is ", TextType.TEXT),
+                TextNode("bold", TextType.BOLD),
+                TextNode(" text.", TextType.TEXT),
+            ],
+            text_to_textnodes(text),
+        )
+
+    def test_italic(self):
+        text = "This is _italic_ text."
+
+        self.assertListEqual(
+            [
+                TextNode("This is ", TextType.TEXT),
+                TextNode("italic", TextType.ITALIC),
+                TextNode(" text.", TextType.TEXT),
+            ],
+            text_to_textnodes(text),
+        )
+
+    def test_code(self):
+        text = "Run `npm install` to install dependencies."
+
+        self.assertListEqual(
+            [
+                TextNode("Run ", TextType.TEXT),
+                TextNode("npm install", TextType.CODE),
+                TextNode(" to install dependencies.", TextType.TEXT),
+            ],
+            text_to_textnodes(text),
+        )
+
+    def test_image(self):
+        text = "Here is an ![image](https://example.com/image.png)."
+
+        self.assertListEqual(
+            [
+                TextNode("Here is an ", TextType.TEXT),
+                TextNode(
+                    "image",
+                    TextType.IMAGE,
+                    "https://example.com/image.png",
+                ),
+                TextNode(".", TextType.TEXT),
+            ],
+            text_to_textnodes(text),
+        )
+
+    def test_link(self):
+        text = "Visit [Boot.dev](https://boot.dev) today."
+
+        self.assertListEqual(
+            [
+                TextNode("Visit ", TextType.TEXT),
+                TextNode(
+                    "Boot.dev",
+                    TextType.LINK,
+                    "https://boot.dev",
+                ),
+                TextNode(" today.", TextType.TEXT),
+            ],
+            text_to_textnodes(text),
+        )
+
+    def test_multiple_different_nodes(self):
+        text = "**bold** _italic_ `code` [link](https://example.com) ![image](https://example.com/image.png)"
+
+        self.assertListEqual(
+            [
+                TextNode("bold", TextType.BOLD),
+                TextNode(" ", TextType.TEXT),
+                TextNode("italic", TextType.ITALIC),
+                TextNode(" ", TextType.TEXT),
+                TextNode("code", TextType.CODE),
+                TextNode(" ", TextType.TEXT),
+                TextNode(
+                    "link",
+                    TextType.LINK,
+                    "https://example.com",
+                ),
+                TextNode(" ", TextType.TEXT),
+                TextNode(
+                    "image",
+                    TextType.IMAGE,
+                    "https://example.com/image.png",
+                ),
+            ],
+            text_to_textnodes(text),
+        )
+
+    def test_multiple_instances_of_same_type(self):
+        text = "**one** and **two** and **three**"
+
+        self.assertListEqual(
+            [
+                TextNode("one", TextType.BOLD),
+                TextNode(" and ", TextType.TEXT),
+                TextNode("two", TextType.BOLD),
+                TextNode(" and ", TextType.TEXT),
+                TextNode("three", TextType.BOLD),
+            ],
+            text_to_textnodes(text),
+        )
+
+    def test_link_and_image_together(self):
+        text = (
+            "See [Google](https://google.com) "
+            "and ![Google logo](https://example.com/google.png)"
+        )
+
+        self.assertListEqual(
+            [
+                TextNode("See ", TextType.TEXT),
+                TextNode(
+                    "Google",
+                    TextType.LINK,
+                    "https://google.com",
+                ),
+                TextNode(" and ", TextType.TEXT),
+                TextNode(
+                    "Google logo",
+                    TextType.IMAGE,
+                    "https://example.com/google.png",
+                ),
+            ],
+            text_to_textnodes(text),
+        )
+
+    def test_markdown_at_start_and_end(self):
+        text = "**bold** and _italic_"
+
+        self.assertListEqual(
+            [
+                TextNode("bold", TextType.BOLD),
+                TextNode(" and ", TextType.TEXT),
+                TextNode("italic", TextType.ITALIC),
+            ],
+            text_to_textnodes(text),
+        )
+
+    def test_consecutive_markdown_elements(self):
+        text = "**bold**_italic_`code`"
+
+        self.assertListEqual(
+            [
+                TextNode("bold", TextType.BOLD),
+                TextNode("italic", TextType.ITALIC),
+                TextNode("code", TextType.CODE),
+            ],
+            text_to_textnodes(text),
+        )
+
+    def test_markdown_inside_normal_text(self):
+        text = "Start **bold** middle _italic_ end."
+
+        self.assertListEqual(
+            [
+                TextNode("Start ", TextType.TEXT),
+                TextNode("bold", TextType.BOLD),
+                TextNode(" middle ", TextType.TEXT),
+                TextNode("italic", TextType.ITALIC),
+                TextNode(" end.", TextType.TEXT),
+            ],
+            text_to_textnodes(text),
         )
