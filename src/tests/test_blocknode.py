@@ -9,20 +9,15 @@ class TestBlockToBlockType(unittest.TestCase):
     # Headings
     # -------------------------
 
-    def test_heading(self):
-        self.assertEqual(
-            block_to_block_type("# Heading"),
-            BlockType.HEADING,
-        )
+    def test_headings_1_to_6(self):
+        for level in range(1, 7):
+            with self.subTest(level=level):
+                block = f"{'#' * level} Heading"
 
-    def test_heading_with_1_to_6_hashes(self):
-        for hashes in range(1, 7):
-            block = f"{'#' * hashes} Heading"
-
-            self.assertEqual(
-                block_to_block_type(block),
-                BlockType.HEADING,
-            )
+                self.assertEqual(
+                    block_to_block_type(block),
+                    BlockType(f"h{level}"),
+                )
 
     def test_heading_with_7_hashes_is_paragraph(self):
         self.assertEqual(
@@ -30,9 +25,15 @@ class TestBlockToBlockType(unittest.TestCase):
             BlockType.PARA,
         )
 
-    def test_heading_requires_space(self):
+    def test_heading_requires_space_after_hashes(self):
         self.assertEqual(
             block_to_block_type("#Heading"),
+            BlockType.PARA,
+        )
+
+    def test_heading_requires_content(self):
+        self.assertEqual(
+            block_to_block_type("# "),
             BlockType.PARA,
         )
 
