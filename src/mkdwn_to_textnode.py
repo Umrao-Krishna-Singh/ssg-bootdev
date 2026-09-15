@@ -1,70 +1,125 @@
 from textnode import TextNode, TextType
+import re
 
 
 def split_nodes_delimiter(
     old_nodes: list[TextNode], delimiter: str, text_type: TextType
 ) -> list[TextNode]:
-    new_notes: list[TextNode] = []
-    for o_note in old_nodes:
-        if o_note.get_type() != TextType.TEXT:
-            new_notes.append(o_note)
-        else:
-            o_text = o_note.get_text()
-            if not o_text:
-                new_notes.append(TextNode("", TextType.TEXT))
-                continue
-            n_text_arr = o_text.split(delimiter)
-            n_notes: list[TextNode] = []
+    new_nodes = []
 
-            is_valid = (
-                True
-                if ((len(o_text) - len("".join(n_text_arr))) / len(delimiter) % 2) == 0
-                else False
+    for old_node in old_nodes:
+        if old_node.text_type != TextType.TEXT:
+            new_nodes.append(old_node)
+            continue
+
+        text = old_node.text
+
+        if delimiter not in text:
+            new_nodes.append(old_node)
+            continue
+
+        parts = text.split(delimiter)
+
+        # Even number of parts means an unmatched delimiter
+        if len(parts) % 2 == 0:
+            raise ValueError(
+                f"Invalid Markdown syntax: unmatched delimiter "
+                f"{delimiter!r} in {text!r}"
             )
 
-            if not is_valid:
-                raise SyntaxError(
-                    f"Invalid use of delimiter: {delimiter} \nClosing delimiter was not found for: {delimiter}"
-                )
+        for i, part in enumerate(parts):
+            if i % 2 == 0:
+                # Outside delimiter
+                if part:
+                    new_nodes.append(TextNode(part, TextType.TEXT))
+            else:
+                # inside delimiter
+                new_nodes.append(TextNode(part, text_type))
 
-            if not o_text:
-                continue
+    return new_nodes
 
-            o_ptr = 0
-            n_ptr = 0
 
-            while o_ptr < len(o_text):
+def extract_markdown_images(mkdown: str) -> list[tuple[str, str]]:
+    return re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", mkdown)
 
-                target = o_text[o_ptr]
-                test = None
-                if o_ptr + len(delimiter) < len(o_text):
-                    test = o_text[o_ptr : o_ptr + 2 * len(delimiter)]
-                val = n_text_arr[n_ptr]
 
-                # if ghost elements found at start - skip ghost element
-                if o_ptr == 0 and o_text[: len(delimiter)] == delimiter:
-                    n_ptr += 1
-                    val = n_text_arr[n_ptr]
-                    n_notes.append(TextNode(val, text_type))
-                    o_ptr += len(val) + (2 * len(delimiter))
-                    n_ptr += 1
+def extract_markdown_links(mkdown: str) -> list[tuple[str, str]]:
+    return re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", mkdown)
 
-                # Edge case 'a-b--c-d' with - as delimiter -> creates ghost elements ['a', 'b', '', 'c', 'd'] - do not skip ghost element here
-                elif test is not None and test == 2 * delimiter:
-                    n_notes.append(TextNode("", text_type))
-                    o_ptr += 2 * len(delimiter)
-                    n_ptr += 1
 
-                elif target != val[0]:
-                    n_notes.append(TextNode(val, text_type))
-                    o_ptr += len(val) + (2 * len(delimiter))
-                    n_ptr += 1
+# text = "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and ![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)"
+# print(extract_markdown_images(text))
+# [("rick roll", "https://i.imgur.com/aKaOqIh.gif"), ("obi wan", "https://i.imgur.com/fJRm4Vk.jpeg")]
 
-                else:
-                    n_notes.append(TextNode(val, TextType.TEXT))
-                    o_ptr += len(val)
-                    n_ptr += 1
 
-            new_notes.extend(n_notes)
+# [(text,href)]
+def split_nodes_link_delimiter(old_nodes: list[TextNode]) -> list[TextNode]:
+    new_nodes: list[TextNode] = []
+    for o_note in old_nodes:
+        if o_note.text_type != TextType.TEXT:
+            new_nodes.append(o_note)
+            continue
 
-    return new_notes
+        o_text = o_note.get_text()
+        links = extract_markdown_links(o_text)
+
+        if not len(links):
+            new_nodes.append(TextNode(o_text, TextType.TEXT))
+            continue
+
+        index = 0
+        for link_pair in links:
+            [text, href] = link_pair
+            delimiter = f"[{text}]({href})"
+            o_text_arr = o_text[index:].split(delimiter)
+
+            first = o_text_arr[0]
+
+            if first:
+                new_nodes.append(TextNode(first, TextType.TEXT))
+
+            new_nodes.append(TextNode(text, TextType.LINK, href))
+            index += len(first) + len(delimiter)
+
+        remaining = o_text[index:]
+
+        if remaining:
+            new_nodes.append(TextNode(remaining, TextType.TEXT))
+
+    return new_nodes
+
+
+# [alt,src]
+def split_nodes_images_delimiter(old_nodes: list[TextNode]) -> list[TextNode]:
+    new_nodes: list[TextNode] = []
+    for o_note in old_nodes:
+        if o_note.text_type != TextType.TEXT:
+            new_nodes.append(o_note)
+            continue
+
+        o_text = o_note.get_text()
+        images = extract_markdown_images(o_text)
+
+        if not len(images):
+            new_nodes.append(TextNode(o_text, TextType.TEXT))
+            continue
+
+        index = 0
+        for image_pair in images:
+            [alt, src] = image_pair
+            delimiter = f"![{alt}]({src})"
+            o_text_arr = o_text[index:].split(delimiter)
+            first = o_text_arr[0]
+
+            if first:
+                new_nodes.append(TextNode(first, TextType.TEXT))
+
+            new_nodes.append(TextNode(alt, TextType.IMAGE, src))
+            index += len(first) + len(delimiter)
+
+        remaining = o_text[index:]
+
+        if remaining:
+            new_nodes.append(TextNode(remaining, TextType.TEXT))
+
+    return new_nodes
