@@ -6,14 +6,6 @@ from pathlib import Path
 from convert import markdown_to_html_node
 import re
 
-# directory where this script lives
-# script_dir = dirname(abspath(__file__))
-# public = join(script_dir, "..", "docs")
-# static = join(script_dir, "..", "static")
-# content = join(script_dir, "..", "content")
-# root = join(script_dir, "..")
-# template_html = join(root, "template.html")
-
 public = join("docs")
 static = join("static")
 content = join("content")
@@ -124,6 +116,3 @@ def generate_pages_recursive(
             if not exists(file_dest):
                 mkdir(file_dest)
             generate_pages_recursive(file_src, template_path, file_dest)
-
-    # if exists(static) and not isfile(static):
-    #     copy_folder(static, public)
