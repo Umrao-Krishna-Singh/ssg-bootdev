@@ -12,6 +12,7 @@ public = join(script_dir, "..", "public")
 static = join(script_dir, "..", "static")
 content = join(script_dir, "..", "content")
 root = join(script_dir, "..")
+template_html = join(root, "template.html")
 
 
 def copy_folder(static_path: str, public_path: str):
@@ -75,3 +76,37 @@ def generate_page(from_path: str, template_path: str, dest_path: str):
     modified_template = template_data.replace("{{ Title }}", title)
     modified_template = modified_template.replace("{{ Content }}", html_version)
     write_file(dest_path, modified_template)
+
+
+def generate_pages_recursive(
+    dir_path_content: str = content,
+    template_path: str = template_html,
+    dest_dir_path: str = public,
+):
+    if not exists(dir_path_content):
+        raise ReferenceError(
+            "content folder does not exist - order of operation is botched"
+        )
+
+    # if not exists(dest_dir_path):
+    #     mkdir(dest_dir_path)
+
+    if not exists(dest_dir_path):
+        raise ReferenceError(
+            "public folder does not exist - order of operation is botched"
+        )
+
+    content_map = listdir(dir_path_content)
+
+    for file in content_map:
+        file_src = join(dir_path_content, file)
+        file_dest = join(dest_dir_path, file)
+        if isfile(file_src):
+            generate_page(file_src, template_path, file_dest.replace(".md", ".html"))
+        else:
+            if not exists(file_dest):
+                mkdir(file_dest)
+            generate_pages_recursive(file_src, template_path, file_dest)
+
+    # if exists(static) and not isfile(static):
+    #     copy_folder(static, public)
