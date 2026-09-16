@@ -5,16 +5,17 @@ from generator import (
     public,
     content,
     template_html,
+    set_basepath,
 )
 from os.path import join
 
-# from sys import argv
+from sys import argv
 
-# basepath = argv[0] or "/"
-# print(basepath)
+basepath = argv[1] if len(argv) > 1 else "/"
 
 
 def main():
+    set_basepath(basepath)
     cp_static_data()
     content_md = join(content, "index.md")
     public_html = join(public, "index.html")
