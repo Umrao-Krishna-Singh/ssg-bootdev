@@ -8,7 +8,7 @@ import re
 
 # directory where this script lives
 script_dir = dirname(abspath(__file__))
-public = join(script_dir, "..", "public")
+public = join(script_dir, "..", "docs")
 static = join(script_dir, "..", "static")
 content = join(script_dir, "..", "content")
 root = join(script_dir, "..")
@@ -75,6 +75,14 @@ def generate_page(from_path: str, template_path: str, dest_path: str):
     title = extract_title(markdown_file_data)
     modified_template = template_data.replace("{{ Title }}", title)
     modified_template = modified_template.replace("{{ Content }}", html_version)
+
+    # modified_template = (
+    #     template_data.replace("{{ Title }}", title)
+    #     .replace("{{ Content }}", html_version)
+    #     .replace('href="/', f'href="{basepath}"')
+    #     .replace('src="/', f'src="{basepath}"')
+    # )
+
     write_file(dest_path, modified_template)
 
 
@@ -87,9 +95,6 @@ def generate_pages_recursive(
         raise ReferenceError(
             "content folder does not exist - order of operation is botched"
         )
-
-    # if not exists(dest_dir_path):
-    #     mkdir(dest_dir_path)
 
     if not exists(dest_dir_path):
         raise ReferenceError(

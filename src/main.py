@@ -6,7 +6,12 @@ from generator import (
     content,
     template_html,
 )
-from os.path import join, abspath, dirname
+from os.path import join
+
+# from sys import argv
+
+# basepath = argv[0] or "/"
+# print(basepath)
 
 
 def main():
